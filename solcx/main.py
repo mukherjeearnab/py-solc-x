@@ -60,19 +60,25 @@ def solc_supports_standard_json_interface(**kwargs):
 
 
 def _parse_compiler_output(stdoutdata):
+    gas_consumption, stdoutdata = _extract_gas_consumption_info(stdoutdata)
     output = json.loads(stdoutdata)
-
+    
     if "contracts" not in output:
         return {}
-
+    
     contracts = output['contracts']
     sources = output['sources']
-
+    
     for source, data in contracts.items():
         data['abi'] = json.loads(data['abi'])
         data['ast'] = sources[source.split(':')[0]]['AST']
-
+    
     return contracts
+
+def _extract_gas_consumption_info(stdoutdata):
+    stdoutput, *gas_consumption_info = stdoutdata.split("======= <stdin>:")
+    stdoutput = stdoutput.strip()
+    return gas_consumption_info, stdoutput
 
 
 ALL_OUTPUT_VALUES = (
